@@ -1,4 +1,3 @@
-import {Muzik} from './muzik';
 import * as GameStates from './gameStates';
 
 export class Game {
@@ -8,6 +7,7 @@ export class Game {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, divName);
 
         this.game.state.add(GameStates.statePlaying, GameStates.Playing);
+        this.game.state.add(GameStates.stateGameOver, GameStates.GameOver);
     }
   
     public start()

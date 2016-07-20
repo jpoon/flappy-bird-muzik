@@ -2,6 +2,7 @@ import {Muzik} from './muzik';
 import {RingBuffer} from './util';
 
 export var statePlaying = "Playing";
+export var stateGameOver = "GameOver";
 
 export class Playing extends Phaser.State {
     game: Phaser.Game;
@@ -25,6 +26,7 @@ export class Playing extends Phaser.State {
     }
 
     preload() {
+        /*
         this.headphones = new Muzik();
         this.headphones.connect();        
         this.headphones.configureAccelerometer((x, y, z, norm, forwardAngle, sideAngle) => {
@@ -35,7 +37,7 @@ export class Playing extends Phaser.State {
                 this.jump(this.headphoneForwardAngle.average());
                 this.headphoneSampleCount = 0;
             }
-        });
+        });*/
 
         this.game.stage.backgroundColor = '#71c5cf';
 
@@ -80,7 +82,7 @@ export class Playing extends Phaser.State {
 
         // Slowly rotate the bird downward, up to a certain point.
         if (this.bird.angle < 20)
-            this.bird.angle += 2;
+            this.bird.angle += 1;
     }
 
     jump(headphoneForwardAngle? : number) {
@@ -89,10 +91,10 @@ export class Playing extends Phaser.State {
             return;
 
         let yVelocity = -350;
-        if (headphoneForwardAngle) {
+        if (headphoneForwardAngle != undefined && typeof headphoneForwardAngle === "number") {
             yVelocity = headphoneForwardAngle * 20;
         }
-        
+
         this.bird.body.velocity.y = yVelocity;
 
         // Jump animation
@@ -120,7 +122,7 @@ export class Playing extends Phaser.State {
     }
 
     restartGame() {
-        this.game.state.start(statePlaying);
+        this.game.state.start(stateGameOver);
     }
 
     addOnePipe(x, y) {
@@ -141,5 +143,40 @@ export class Playing extends Phaser.State {
 
         this.score += 1;
         this.labelScore.text = String(this.score);
+    }
+}
+
+export class GameOver extends Phaser.State {
+    titleText: Phaser.Text;
+    congratsText: Phaser.Text;
+    instructionText: Phaser.Text;
+
+    constructor()
+    {
+        super();
+    }
+
+    create() {
+        var style = {font: '65px Arial', fill: '#ffffff', align: 'center'};
+        this.titleText = this.game.add.text(this.game.world.centerX, 100, 'Game Over!', style);
+        this.titleText.anchor.set(0.5, 0.5);
+        this.congratsText = this.game.add.text(this.game.world.centerX, 200, 'You Win!', {
+            font: '32px Arial',
+            fill: '#ffffff',
+            align: 'center'
+        });
+        this.congratsText.anchor.set(0.5, 0.5);
+        this.instructionText = this.game.add.text(this.game.world.centerX, 300, 'Click To Play Again', {
+            font: '16px Arial',
+            fill: '#ffffff',
+            align: 'center'
+        });
+        this.instructionText.anchor.set(0.5, 0.5);
+    }
+
+    update() {
+        if (this.game.input.activePointer.justPressed()) {
+            this.game.state.start(statePlaying);
+        }
     }
 }
