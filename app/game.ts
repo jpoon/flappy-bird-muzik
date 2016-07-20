@@ -1,15 +1,17 @@
 export class Game {
     game: Phaser.Game;
+    _test: String;
     //var game = new Phaser.Game(400, 490, Phaser.AUTO, 'gameDiv');
 
     constructor(width: number, height: number, divName: string) {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, divName);
         this.addState();
+
+        this._test = "omgomagoma";
     }
 
     private addState() {
         let mainState = {
-
             preload: function() {
                 this.game.stage.backgroundColor = '#71c5cf';
 
@@ -47,6 +49,7 @@ export class Game {
             },
 
             update: function() {
+                console.log(this.game.state.states["main"]._test);
                 if (this.bird.inWorld == false)
                     this.restartGame();
 

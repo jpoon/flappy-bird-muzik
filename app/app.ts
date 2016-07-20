@@ -14,30 +14,14 @@ export class MyApp {
 
   constructor(platform: Platform) {
     platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
       StatusBar.styleDefault();
 
-      //this.headphones = new Muzik();
-      //this.headphones.configureAccelerometer(this.muzikAccelerometerDataStream);
-
-      //this.headphonesConnect();
+      this.headphones = new Muzik();
+      this.headphones.configureAccelerometer(this.muzikAccelerometerDataStream);
+      this.headphones.connect();
 
       let game = new Game(400, 490, 'gameDiv');
-       game.start();
-    });
-  }
-
-  private headphonesConnect() {
-    this.headphones.getIsConnected().then(isConnected => { 
-      if (!isConnected) {
-        this.headphones.connect()
-          .then(state => console.log(state))
-          .catch(err => {
-            console.log(err + ": Retrying...");
-            this.headphonesConnect();
-        });
-      }
+      // game.start();
     });
   }
 
