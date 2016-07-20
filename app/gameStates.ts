@@ -1,6 +1,11 @@
-export class Game extends Phaser.State {
+import {Muzik} from './muzik';
+import {RingBuffer} from './util';
+
+export var statePlaying = "Playing";
+
+export class Playing extends Phaser.State {
     game: Phaser.Game;
-    defaultState : Phaser.State;
+    headphones: Muzik;
 
     pipes: Phaser.Group;
     bird: Phaser.Sprite;
@@ -9,20 +14,36 @@ export class Game extends Phaser.State {
     jumpSound: Phaser.Sound;
     timer: Phaser.TimerEvent;
 
-    constructor(width: number, height: number, divName: string) {
+    headphoneForwardAngle: RingBuffer; 
+    headphoneSampleCount: number;
+
+    constructor() {
         super();
-        this.game = new Phaser.Game(width, height, Phaser.AUTO, divName);
+
+        this.headphoneForwardAngle = new RingBuffer(10);   
+        this.headphoneSampleCount = 0;
     }
 
-
     preload() {
+        this.headphones = new Muzik();
+        this.headphones.connect();        
+        this.headphones.configureAccelerometer((x, y, z, norm, forwardAngle, sideAngle) => {
+            this.headphoneForwardAngle.push(forwardAngle); 
+            this.headphoneSampleCount++;
+
+            if (this.headphoneSampleCount % 5 == 0) {
+                this.jump(this.headphoneForwardAngle.average());
+                this.headphoneSampleCount = 0;
+            }
+        });
+
         this.game.stage.backgroundColor = '#71c5cf';
 
         this.game.load.image('bird', 'assets/bird.png');
         this.game.load.image('pipe', 'assets/pipe.png');
 
         // Load the jump sound
-        this.game.load.audio('jump', 'assets/jump.wav');
+        //this.game.load.audio('jump', 'assets/jump.wav');
 
         this.game.load.image('jumpbutton', 'assets/jump.png');
     }
@@ -48,7 +69,7 @@ export class Game extends Phaser.State {
         this.labelScore = this.game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
 
         // Add the jump sound
-        this.jumpSound = this.game.add.audio('jump');
+        //this.jumpSound = this.game.add.audio('jump');
     }
 
     update() {
@@ -59,21 +80,26 @@ export class Game extends Phaser.State {
 
         // Slowly rotate the bird downward, up to a certain point.
         if (this.bird.angle < 20)
-            this.bird.angle += 1;
+            this.bird.angle += 2;
     }
 
-    jump() {
+    jump(headphoneForwardAngle? : number) {
         // If the bird is dead, he can't jump
         if (this.bird.alive == false)
             return;
 
-        this.bird.body.velocity.y = -350;
+        let yVelocity = -350;
+        if (headphoneForwardAngle) {
+            yVelocity = headphoneForwardAngle * 20;
+        }
+        
+        this.bird.body.velocity.y = yVelocity;
 
         // Jump animation
         this.game.add.tween(this.bird).to({angle: -20}, 100).start();
 
         // Play sound
-        this.jumpSound.play();
+        //this.jumpSound.play();
     }
 
     hitPipe()  {
@@ -93,36 +119,27 @@ export class Game extends Phaser.State {
         }, this);
     }
 
-            restartGame: function() {
-                this.game.state.start('main');
-            },
-
-            addOnePipe: function(x, y) {
-                var pipe = this.pipes.getFirstDead();
-
-                pipe.reset(x, y);
-                pipe.body.velocity.x = -200;
-                pipe.checkWorldBounds = true;
-                pipe.outOfBoundsKill = true;
-            },
-
-            addRowOfPipes: function() {
-                var hole = Math.floor(Math.random()*5)+1;
-
-                for (var i = 0; i < 8; i++)
-                    if (i != hole && i != hole +1)
-                        this.addOnePipe(400, i*60+10);
-
-                this.score += 1;
-                this.labelScore.text = this.score;
-            },
-        };
-
-        this.game.state.add('main', mainState);
+    restartGame() {
+        this.game.state.start(statePlaying);
     }
 
-    public start()
-    {
-        this.game.state.start('main');      
+    addOnePipe(x, y) {
+        var pipe = this.pipes.getFirstDead();
+
+        pipe.reset(x, y);
+        pipe.body.velocity.x = -200;
+        pipe.checkWorldBounds = true;
+        pipe.outOfBoundsKill = true;
+    }
+
+    addRowOfPipes() {
+        var hole = Math.floor(Math.random()*5)+1;
+
+        for (var i = 0; i < 8; i++)
+            if (i != hole && i != hole +1)
+                this.addOnePipe(400, i*60+10);
+
+        this.score += 1;
+        this.labelScore.text = String(this.score);
     }
 }
