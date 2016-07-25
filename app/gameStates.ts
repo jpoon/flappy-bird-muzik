@@ -45,7 +45,7 @@ export class Playing extends Phaser.State {
         this.game.load.image('pipe', 'assets/pipe.png');
 
         // Load the jump sound
-        //this.game.load.audio('jump', 'assets/jump.wav');
+        this.game.load.audio('jump', 'assets/jump.wav');
 
         this.game.load.image('jumpbutton', 'assets/jump.png');
     }
@@ -71,7 +71,7 @@ export class Playing extends Phaser.State {
         this.labelScore = this.game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
 
         // Add the jump sound
-        //this.jumpSound = this.game.add.audio('jump');
+        this.jumpSound = this.game.add.audio('jump');
     }
 
     update() {
@@ -101,7 +101,7 @@ export class Playing extends Phaser.State {
         this.game.add.tween(this.bird).to({angle: -20}, 100).start();
 
         // Play sound
-        //this.jumpSound.play();
+        this.jumpSound.play();
     }
 
     hitPipe()  {
@@ -122,7 +122,7 @@ export class Playing extends Phaser.State {
     }
 
     restartGame() {
-        this.game.state.start(stateGameOver);
+        this.game.state.start(stateGameOver, true, false, this.score);
     }
 
     addOnePipe(x, y) {
@@ -150,22 +150,21 @@ export class GameOver extends Phaser.State {
     titleText: Phaser.Text;
     congratsText: Phaser.Text;
     instructionText: Phaser.Text;
+    score: number;
 
-    constructor()
+    init(score: number)
     {
-        super();
+        this.score = score;
     }
 
     create() {
-        var style = {font: '65px Arial', fill: '#ffffff', align: 'center'};
-        this.titleText = this.game.add.text(this.game.world.centerX, 100, 'Game Over!', style);
-        this.titleText.anchor.set(0.5, 0.5);
-        this.congratsText = this.game.add.text(this.game.world.centerX, 200, 'You Win!', {
+        this.congratsText = this.game.add.text(this.game.world.centerX, 200, 'Score: ' + this.score, {
             font: '32px Arial',
             fill: '#ffffff',
             align: 'center'
         });
         this.congratsText.anchor.set(0.5, 0.5);
+
         this.instructionText = this.game.add.text(this.game.world.centerX, 300, 'Click To Play Again', {
             font: '16px Arial',
             fill: '#ffffff',
