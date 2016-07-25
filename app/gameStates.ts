@@ -1,8 +1,40 @@
 import {Muzik} from './muzik';
 import {RingBuffer} from './util';
 
+export var stateStarting = "Starting";
 export var statePlaying = "Playing";
 export var stateGameOver = "GameOver";
+
+class Styles {
+ public static BackgroundColor : string = '#5DD5E3'
+}
+
+export class Starting extends Phaser.State {
+    counter: number;
+    text: Phaser.Text;
+
+    preload() {
+        this.game.stage.backgroundColor = Styles.BackgroundColor;
+    }
+
+    create() {
+        this.counter = 3;
+        this.text = this.game.add.text(this.game.world.centerX, this.game.world.centerY, String(this.counter), {
+            font: "64px Arial", fill: "#ffffff", align: "center"
+        });
+        this.text.anchor.setTo(0.5, 0.5);
+
+        this.game.time.events.loop(Phaser.Timer.SECOND, this.updateCounter, this);
+    }
+
+    private updateCounter() {
+        if (--this.counter == 0) {
+            this.game.state.start(statePlaying);
+        }
+        this.text.setText(String(this.counter));
+
+    }
+}
 
 export class Playing extends Phaser.State {
     game: Phaser.Game;
@@ -15,13 +47,13 @@ export class Playing extends Phaser.State {
     jumpSound: Phaser.Sound;
     timer: Phaser.TimerEvent;
 
-    headphoneForwardAngle: RingBuffer; 
+    headphoneForwardAngle: RingBuffer;
     headphoneSampleCount: number;
 
     constructor() {
         super();
 
-        this.headphoneForwardAngle = new RingBuffer(10);   
+        this.headphoneForwardAngle = new RingBuffer(10);
         this.headphoneSampleCount = 0;
     }
 
@@ -39,7 +71,7 @@ export class Playing extends Phaser.State {
             }
         });*/
 
-        this.game.stage.backgroundColor = '#71c5cf';
+        this.game.stage.backgroundColor = Styles.BackgroundColor;
 
         this.game.load.image('bird', 'assets/bird.png');
         this.game.load.image('pipe', 'assets/pipe.png');
@@ -85,11 +117,12 @@ export class Playing extends Phaser.State {
             this.bird.angle += 1;
     }
 
-    jump(headphoneForwardAngle? : number) {
+    jump(headphoneForwardAngle?: number) {
         // If the bird is dead, he can't jump
         if (this.bird.alive == false)
             return;
 
+        // if there are headphones connected
         let yVelocity = -350;
         if (headphoneForwardAngle != undefined && typeof headphoneForwardAngle === "number") {
             yVelocity = headphoneForwardAngle * 20;
@@ -98,13 +131,13 @@ export class Playing extends Phaser.State {
         this.bird.body.velocity.y = yVelocity;
 
         // Jump animation
-        this.game.add.tween(this.bird).to({angle: -20}, 100).start();
+        this.game.add.tween(this.bird).to({ angle: -20 }, 100).start();
 
         // Play sound
         this.jumpSound.play();
     }
 
-    hitPipe()  {
+    hitPipe() {
         // If the bird has already hit a pipe, we have nothing to do
         if (this.bird.alive == false)
             return;
@@ -116,7 +149,7 @@ export class Playing extends Phaser.State {
         this.game.time.events.remove(this.timer);
 
         // Go through all the pipes, and stop their movement
-        this.pipes.forEachAlive(function(p){
+        this.pipes.forEachAlive(function (p) {
             p.body.velocity.x = 0;
         }, this);
     }
@@ -135,11 +168,11 @@ export class Playing extends Phaser.State {
     }
 
     addRowOfPipes() {
-        var hole = Math.floor(Math.random()*5)+1;
+        var hole = Math.floor(Math.random() * 5) + 1;
 
         for (var i = 0; i < 8; i++)
-            if (i != hole && i != hole +1)
-                this.addOnePipe(400, i*60+10);
+            if (i != hole && i != hole + 1)
+                this.addOnePipe(400, i * 60 + 10);
 
         this.score += 1;
         this.labelScore.text = String(this.score);
@@ -152,9 +185,12 @@ export class GameOver extends Phaser.State {
     instructionText: Phaser.Text;
     score: number;
 
-    init(score: number)
-    {
+    init(score: number) {
         this.score = score;
+    }
+
+    preload() {
+        this.game.stage.backgroundColor = Styles.BackgroundColor;
     }
 
     create() {
@@ -175,7 +211,7 @@ export class GameOver extends Phaser.State {
 
     update() {
         if (this.game.input.activePointer.justPressed()) {
-            this.game.state.start(statePlaying);
+            this.game.state.start(stateStarting);
         }
     }
 }
