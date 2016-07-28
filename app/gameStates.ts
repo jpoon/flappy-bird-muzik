@@ -12,6 +12,11 @@ class Styles {
 export class Starting extends Phaser.State {
     counter: number;
     text: Phaser.Text;
+    headphones: Muzik;
+
+    init(headphones: Muzik) {
+        this.headphones = headphones;
+    }
 
     preload() {
         this.game.stage.backgroundColor = Styles.BackgroundColor;
@@ -29,7 +34,7 @@ export class Starting extends Phaser.State {
 
     private updateCounter() {
         if (--this.counter == 0) {
-            this.game.state.start(statePlaying);
+            this.game.state.start(statePlaying, true, false, this.headphones);
         }
         this.text.setText(String(this.counter));
 
@@ -53,23 +58,24 @@ export class Playing extends Phaser.State {
     constructor() {
         super();
 
-        this.headphoneForwardAngle = new RingBuffer(10);
+        this.headphoneForwardAngle = new RingBuffer(5);
         this.headphoneSampleCount = 0;
     }
 
+    init(headphones: Muzik) {
+        this.headphones = headphones;
+    }
+
     preload() {
-        /*
-        this.headphones = new Muzik();
-        this.headphones.connect();        
         this.headphones.configureAccelerometer((x, y, z, norm, forwardAngle, sideAngle) => {
             this.headphoneForwardAngle.push(forwardAngle); 
             this.headphoneSampleCount++;
 
-            if (this.headphoneSampleCount % 5 == 0) {
+            if (this.headphoneSampleCount % 3 == 0) {
                 this.jump(this.headphoneForwardAngle.average());
                 this.headphoneSampleCount = 0;
             }
-        });*/
+        });
 
         this.game.stage.backgroundColor = Styles.BackgroundColor;
 
@@ -125,7 +131,7 @@ export class Playing extends Phaser.State {
         // if there are headphones connected
         let yVelocity = -350;
         if (headphoneForwardAngle != undefined && typeof headphoneForwardAngle === "number") {
-            yVelocity = headphoneForwardAngle * 20;
+            yVelocity = headphoneForwardAngle * 25;
         }
 
         this.bird.body.velocity.y = yVelocity;
@@ -155,7 +161,7 @@ export class Playing extends Phaser.State {
     }
 
     restartGame() {
-        this.game.state.start(stateGameOver, true, false, this.score);
+        this.game.state.start(stateGameOver, true, false, this.score, this.headphones);
     }
 
     addOnePipe(x, y) {
@@ -184,13 +190,19 @@ export class GameOver extends Phaser.State {
     congratsText: Phaser.Text;
     instructionText: Phaser.Text;
     score: number;
+    headphones: Muzik;
 
-    init(score: number) {
+    init(score: number, headphones: Muzik) {
         this.score = score;
+        this.headphones = headphones;
     }
 
     preload() {
         this.game.stage.backgroundColor = Styles.BackgroundColor;
+
+        this.headphones.configureButtonUp(() => {
+            this.game.state.start(stateStarting, true, false, this.headphones);
+        }); 
     }
 
     create() {
@@ -201,7 +213,7 @@ export class GameOver extends Phaser.State {
         });
         this.congratsText.anchor.set(0.5, 0.5);
 
-        this.instructionText = this.game.add.text(this.game.world.centerX, 300, 'Click To Play Again', {
+        this.instructionText = this.game.add.text(this.game.world.centerX, 300, 'Press the UP button play again', {
             font: '16px Arial',
             fill: '#ffffff',
             align: 'center'
@@ -211,7 +223,7 @@ export class GameOver extends Phaser.State {
 
     update() {
         if (this.game.input.activePointer.justPressed()) {
-            this.game.state.start(stateStarting);
+            this.game.state.start(stateStarting, true, false, this.headphones);
         }
     }
 }

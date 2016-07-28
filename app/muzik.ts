@@ -1,11 +1,4 @@
 export class Muzik {
-  
-  constructor() {
-    if (!muzik) {
-      console.warn("Are you running this on a device?");
-    }
-  }
-
   public connect() : Promise<boolean> {
     return new Promise(resolve => {
       this.isConnected().then(isConnected => { 
@@ -17,7 +10,7 @@ export class Muzik {
             })
             .catch(err => {
               console.log(err + ": Retrying...");
-              this.connect();
+              setTimeout(this.connect(), 250);
           });
         }
       });
@@ -25,7 +18,7 @@ export class Muzik {
   }
 
   public isConnected() : Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       muzik.isConnected(isConnected => {
         resolve(isConnected);
       })
@@ -50,5 +43,9 @@ export class Muzik {
 
   public configureAccelerometer(callback) {
     muzik.registerForAccelerometerDataStream(callback);
+  }
+
+  public configureButtonUp(callback) {
+    muzik.registerForGestures(callback, muzik.GESTURE.BUTTON_UP);
   }
 }
