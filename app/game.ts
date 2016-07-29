@@ -3,7 +3,7 @@ import {Muzik} from './muzik';
 
 export class Game {
     game: Phaser.Game;
-    headphones : Muzik;
+    headphones: Muzik;
 
     constructor(width: number, height: number, divName: string) {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, divName);
@@ -12,8 +12,7 @@ export class Game {
         this.game.state.add(GameStates.stateGameOver, GameStates.GameOver);
     }
   
-    public start(headphones)
-    {
+    public start(headphones: Muzik) {
         this.headphones = headphones;
         this.game.state.start(GameStates.stateStarting, true, false, headphones);
     }

@@ -1,12 +1,12 @@
 import {Muzik} from './muzik';
 import {RingBuffer} from './util';
 
-export var stateStarting = "Starting";
-export var statePlaying = "Playing";
-export var stateGameOver = "GameOver";
+export var stateStarting = 'Starting';
+export var statePlaying = 'Playing';
+export var stateGameOver = 'GameOver';
 
 class Styles {
- public static BackgroundColor : string = '#5DD5E3'
+ public static BackgroundColor: string = '#5DD5E3';
 }
 
 export class Starting extends Phaser.State {
@@ -24,16 +24,20 @@ export class Starting extends Phaser.State {
 
     create() {
         this.counter = 3;
-        this.text = this.game.add.text(this.game.world.centerX, this.game.world.centerY, String(this.counter), {
-            font: "64px Arial", fill: "#ffffff", align: "center"
+        this.text = this.game.add.text(this.game.world.centerX, 175, String(this.counter), {
+            font: '64px Arial', fill: '#ffffff', align: 'center'
         });
         this.text.anchor.setTo(0.5, 0.5);
+
+        let instructionTextStyle = { font: '16px Arial', fill: '#ffffff', align: 'left', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
+        let instructionText = this.game.add.text(this.game.world.centerX, 400, 'Instructions:\nUse the Muzik Ones as the controller.\nWear the Muzik Ones and tilt your headphones up/down to control the bird.', instructionTextStyle);
+        instructionText.anchor.set(0.5);
 
         this.game.time.events.loop(Phaser.Timer.SECOND, this.updateCounter, this);
     }
 
     private updateCounter() {
-        if (--this.counter == 0) {
+        if (--this.counter === 0) {
             this.game.state.start(statePlaying, true, false, this.headphones);
         }
         this.text.setText(String(this.counter));
@@ -71,7 +75,7 @@ export class Playing extends Phaser.State {
             this.headphoneForwardAngle.push(forwardAngle); 
             this.headphoneSampleCount++;
 
-            if (this.headphoneSampleCount % 3 == 0) {
+            if (this.headphoneSampleCount % 3 === 0) {
                 this.jump(this.headphoneForwardAngle.average());
                 this.headphoneSampleCount = 0;
             }
@@ -106,14 +110,14 @@ export class Playing extends Phaser.State {
         var jumpbutton = this.game.add.button(this.game.world.centerX - 40, 420, 'jumpbutton', this.jump, this, 2, 1, 0);
 
         this.score = 0;
-        this.labelScore = this.game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
+        this.labelScore = this.game.add.text(20, 20, '0', { font: '30px Arial', fill: '#ffffff' });
 
         // Add the jump sound
         this.jumpSound = this.game.add.audio('jump');
     }
 
     update() {
-        if (this.bird.inWorld == false)
+        if (this.bird.inWorld === false)
             this.restartGame();
 
         this.game.physics.arcade.overlap(this.bird, this.pipes, this.hitPipe, null, this);
@@ -125,12 +129,12 @@ export class Playing extends Phaser.State {
 
     jump(headphoneForwardAngle?: number) {
         // If the bird is dead, he can't jump
-        if (this.bird.alive == false)
+        if (this.bird.alive === false)
             return;
 
         // if there are headphones connected
         let yVelocity = -350;
-        if (headphoneForwardAngle != undefined && typeof headphoneForwardAngle === "number") {
+        if (headphoneForwardAngle !== undefined && typeof headphoneForwardAngle === 'number') {
             yVelocity = headphoneForwardAngle * 25;
         }
 
@@ -145,7 +149,7 @@ export class Playing extends Phaser.State {
 
     hitPipe() {
         // If the bird has already hit a pipe, we have nothing to do
-        if (this.bird.alive == false)
+        if (this.bird.alive === false)
             return;
 
         // Set the alive property of the bird to false
@@ -177,7 +181,7 @@ export class Playing extends Phaser.State {
         var hole = Math.floor(Math.random() * 5) + 1;
 
         for (var i = 0; i < 8; i++)
-            if (i != hole && i != hole + 1)
+            if (i !== hole && i !== hole + 1)
                 this.addOnePipe(400, i * 60 + 10);
 
         this.score += 1;
@@ -204,11 +208,11 @@ export class GameOver extends Phaser.State {
 
     create() {
         let congratsTextStyle = { font: '32px Arial', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-        let congratsText = this.game.add.text(this.game.world.centerX, 150, 'Score: ' + this.score, congratsTextStyle);
+        let congratsText = this.game.add.text(this.game.world.centerX, 125, 'Score: ' + this.score, congratsTextStyle);
         congratsText.anchor.set(0.5);
 
-        let instructionTextStyle = { font: '16px Arial', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-        let instructionText = this.game.add.text(this.game.world.centerX, 300, "Press the UP button on the Muzik Ones\n or anywhere on the screen to continue.", instructionTextStyle);
+        let instructionTextStyle = { font: '16px Arial', fill: '#ffffff', align: 'left', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
+        let instructionText = this.game.add.text(this.game.world.centerX, 425, 'Press the UP button on the headset\nor anywhere on the screen to continue.', instructionTextStyle);
         instructionText.anchor.set(0.5);
     }
 

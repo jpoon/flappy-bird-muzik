@@ -22,7 +22,7 @@ export class MyApp {
       game.start(this.headphones);
     }).catch(e => {
       console.warn(e);
-    })
+    });
   }
 }
 

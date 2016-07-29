@@ -23,6 +23,6 @@ export class RingBuffer {
             sum += i;
         }
 
-        return sum/this._store.length;
+        return sum / this._store.length;
     }
 }

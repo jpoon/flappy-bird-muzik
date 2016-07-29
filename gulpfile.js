@@ -47,7 +47,7 @@ gulp.task('watch', ['clean'], function(done){
   );
 });
 
-gulp.task('build', ['clean'], function(done){
+gulp.task('build', ['clean', 'lint'], function(done){
   runSequence(
     ['sass', 'html', 'fonts', 'scripts'],
     function(){

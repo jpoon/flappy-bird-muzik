@@ -1,6 +1,6 @@
 export class Muzik {
 
-  public static isPlatformSupported() : boolean {
+  public static isPlatformSupported(): boolean {
     try {
       muzik;
     } catch (e) {
@@ -9,7 +9,7 @@ export class Muzik {
     return true;
   }
 
-  public connect() : Promise<boolean> {
+  public connect(): Promise<boolean> {
     if (!Muzik.isPlatformSupported()) {
       return new Promise(resolve => resolve(false));
     }
@@ -19,19 +19,19 @@ export class Muzik {
         if (!isConnected) {
           this.connectHelper()
             .then(state => {
-              console.log("Connected");
+              console.log('Connected');
               resolve(true);
             })
             .catch(err => {
-              console.log(err + ": Retrying...");
-              setTimeout(this.connect(), 250);
+              console.log(err + ': Retrying...');
+              setTimeout(this.connect(), 1000);
           });
         }
       });
     });
   }
 
-  public isConnected() : Promise<boolean> {
+  public isConnected(): Promise<boolean> {
     if (!Muzik.isPlatformSupported()) {
       return new Promise(resolve => resolve(false));
     }
@@ -39,7 +39,7 @@ export class Muzik {
     return new Promise(resolve => {
       muzik.isConnected(isConnected => {
         resolve(isConnected);
-      })
+      });
     });
   }
 
@@ -55,7 +55,7 @@ export class Muzik {
     }
   }
 
-  private connectHelper() : Promise<muzik.CONNECTION_STATE> {
+  private connectHelper(): Promise<muzik.CONNECTION_STATE> {
     return new Promise((resolve, reject) => {
       muzik.startServer();
       muzik.registerForConnectionState(state => {
