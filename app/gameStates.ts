@@ -186,9 +186,6 @@ export class Playing extends Phaser.State {
 }
 
 export class GameOver extends Phaser.State {
-    titleText: Phaser.Text;
-    congratsText: Phaser.Text;
-    instructionText: Phaser.Text;
     score: number;
     headphones: Muzik;
 
@@ -206,19 +203,13 @@ export class GameOver extends Phaser.State {
     }
 
     create() {
-        this.congratsText = this.game.add.text(this.game.world.centerX, 200, 'Score: ' + this.score, {
-            font: '32px Arial',
-            fill: '#ffffff',
-            align: 'center'
-        });
-        this.congratsText.anchor.set(0.5, 0.5);
+        let congratsTextStyle = { font: '32px Arial', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
+        let congratsText = this.game.add.text(this.game.world.centerX, 150, 'Score: ' + this.score, congratsTextStyle);
+        congratsText.anchor.set(0.5);
 
-        this.instructionText = this.game.add.text(this.game.world.centerX, 300, 'Press the UP button play again', {
-            font: '16px Arial',
-            fill: '#ffffff',
-            align: 'center'
-        });
-        this.instructionText.anchor.set(0.5, 0.5);
+        let instructionTextStyle = { font: '16px Arial', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
+        let instructionText = this.game.add.text(this.game.world.centerX, 300, "Press the UP button on the Muzik Ones\n or anywhere on the screen to continue.", instructionTextStyle);
+        instructionText.anchor.set(0.5);
     }
 
     update() {

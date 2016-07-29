@@ -5,3 +5,4 @@ plugins/
 .DS_Store
 .vscode
 typings/
+debug.log
