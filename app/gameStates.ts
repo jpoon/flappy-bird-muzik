@@ -30,7 +30,7 @@ export class Starting extends Phaser.State {
         this.text.anchor.setTo(0.5, 0.5);
 
         let instructionTextStyle = { font: '16px Arial', fill: '#ffffff', align: 'left', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-        let instructionText = this.game.add.text(this.game.world.centerX, 400, 'Instructions:\nUse the Muzik Ones as the controller.\nWear the Muzik Ones and tilt your headphones up/down to control the bird.', instructionTextStyle);
+        let instructionText = this.game.add.text(this.game.world.centerX, 400, 'Instructions:\nUse the Muzik Ones as the controller.\nPut on your the Muzik Ones and tilt your headphones up/down to control the bird.', instructionTextStyle);
         instructionText.anchor.set(0.5);
 
         this.game.time.events.loop(Phaser.Timer.SECOND, this.updateCounter, this);

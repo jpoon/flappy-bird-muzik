@@ -30,7 +30,7 @@
   },
   "name": "flappy-bird-muzik",
   "version": "1.0.0",
-  "description": "flappy-bird-muzik: A sample MuzikSDK project.",
+  "description": "flappy-bird-muzik: A FlappyBird clone that uses the Muzik One headphones as a controller.",
   "cordovaPlugins": [
     "cordova-plugin-device",
     "cordova-plugin-console",
