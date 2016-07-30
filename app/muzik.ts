@@ -1,5 +1,4 @@
 export class Muzik {
-
   public static isPlatformSupported(): boolean {
     try {
       muzik;
@@ -23,7 +22,7 @@ export class Muzik {
               resolve(true);
             })
             .catch(err => {
-              console.log(err + ': Retrying...');
+              console.warn(err + ': Retrying...');
               setTimeout(this.connect(), 1000);
           });
         }
@@ -41,6 +40,19 @@ export class Muzik {
         resolve(isConnected);
       });
     });
+  }
+
+  public getBluetoothName(): Promise<string> {
+    const localName: string = 'Muzik';
+    if (!Muzik.isPlatformSupported()) {
+      return new Promise(resolve => resolve(localName));
+    }
+
+    return new Promise(resolve => {
+      muzik.getBluetoothLocalName(name => {
+        resolve(name);
+      });
+    }) 
   }
 
   public configureAccelerometer(callback) {
