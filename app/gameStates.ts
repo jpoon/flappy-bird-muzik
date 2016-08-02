@@ -9,10 +9,21 @@ export var stateGameOver = 'GameOver';
 
 class Styles {
  public static BackgroundColor: string = '#5DD5E3';
+ public static FontColor: string = '#ffffff';
+
+ // starting
+ public static TitleTextStyle = { font: '32px Arial Black', fill: Styles.FontColor, align: 'center', stroke: '#000000', strokeThickness: 5 };
+ public static InstructionTextStyle = { font: '18px Consolas', fill: Styles.FontColor, align: 'left' };
+
+ // game over
+ public static ScoreTextStyle = { font: '28px Consolas', fill: '#ffffff', align: 'center' };
+ public static RankTextStyle = { font: '26px Consolas', fill: '#ffffff', align: 'center' };
 }
 
 export class Starting extends Phaser.State {
   headphones: Muzik;
+  _startText: Phaser.Text;
+  _timer: number = 0;
 
   init(headphones: Muzik) {
     this.headphones = headphones;
@@ -23,27 +34,31 @@ export class Starting extends Phaser.State {
   }
 
   create() {
-    //  Capture headphone buttons
+    // capture headphone button
     this.headphones.configureButtonUp(() => {
       this.nextState();
     }); 
 
-    let titleTextStyle = { font: '32px Arial Black', fill: '#ffffff', align: 'center', stroke: '#000000', strokeThickness: 5 };
-    let titleText = this.game.add.text(this.game.world.centerX, 100, 'MuzikFlappyBird', titleTextStyle);
+    let titleText = this.game.add.text(this.game.world.centerX, 100, 'MuzikFlappyBird', Styles.TitleTextStyle);
     titleText.anchor.set(0.5);
 
-    let instructionTextStyle = { font: '18px Consolas', fill: '#ffffff', align: 'left', wordWrap: true, wordWrapWidth: (this.game.world.width - 80)};
-    let instructionText = this.game.add.text(this.game.world.centerX, 250, 'How to play:\n1) Connect your Muzik Ones\n2) Control the bird by\n   tilting your Muzik Ones\n   up/down.', instructionTextStyle);
+    let instructionText = this.game.add.text(this.game.world.centerX, 300, 'How to play:\n1) Connect your Muzik Ones\n2) Control the bird by\n   tilting your Muzik Ones\n   up/down.', Styles.InstructionTextStyle);
     instructionText.anchor.set(0.5);
 
-    let startTextStyle = { font: '18px Consolas', fill: '#ffffff', align: 'center'};
-    let startText = this.game.add.text(this.game.world.centerX, 420, 'Press UP to Start', instructionTextStyle);
-    startText.anchor.set(0.5);
+    this._startText = this.game.add.text(this.game.world.centerX, 420, 'Press UP to Start', Styles.InstructionTextStyle);
+    this._startText.anchor.set(0.5);
   }
 
   update() {
     if (this.game.input.activePointer.justPressed()) {
       this.nextState();
+    }
+
+    // blink start text
+    this._timer += this.game.time.elapsed;
+    if (this._timer >= 500) {
+      this._timer -= 500;
+      this._startText.visible = !this._startText.visible;
     }
   }
 
@@ -58,7 +73,7 @@ export class Playing extends Phaser.State {
 
   pipes: Phaser.Group;
   bird: Phaser.Sprite;
-  score: number;
+  score: number = 0;
   labelScore: Phaser.Text;
   jumpSound: Phaser.Sound;
   timer: Phaser.TimerEvent;
@@ -71,6 +86,7 @@ export class Playing extends Phaser.State {
   }
 
   preload() {
+    // capture headphone forward angle
     this.headphones.configureAccelerometer((x, y, z, norm, forwardAngle, sideAngle) => {
       this.headphoneForwardAngle.push(forwardAngle); 
       this.headphoneSampleCount++;
@@ -100,12 +116,12 @@ export class Playing extends Phaser.State {
     this.game.physics.arcade.enable(this.bird);
     this.bird.body.gravity.y = 1000;
 
-    // New anchor position
+    // new anchor position
     this.bird.anchor.setTo(-0.2, 0.5);
 
-    var jumpbutton = this.game.add.button(this.game.world.centerX - 40, 420, 'jumpbutton', this.jump, this, 2, 1, 0);
+    // jump button
+    this.game.add.button(this.game.world.centerX - 40, 420, 'jumpbutton', this.jump, this, 2, 1, 0);
 
-    this.score = 0;
     this.labelScore = this.game.add.text(20, 20, String(this.score), { font: '30px Arial', fill: '#ffffff' });
   }
 
@@ -180,50 +196,44 @@ export class Playing extends Phaser.State {
 }
 
 export class GameOver extends Phaser.State {
-  gameScore: number;
-  headphones: Muzik;
-  headphoneName: string;
-  score: Score;
-  leaderboard: Score[];
-  rankText: Phaser.Text;
+  _rawScore: number;
+  _headphones: Muzik;
+  _timer: number = 0;
+  _instructionText: Phaser.Text;
 
-  init(gameScore: number, headphones: Muzik) {
-    this.gameScore = gameScore;
-    this.headphones = headphones;
+  init(rawScore: number, headphones: Muzik) {
+    this._rawScore = rawScore;
+    this._headphones = headphones;
   }
 
   preload() {
     this.game.stage.backgroundColor = Styles.BackgroundColor;
 
-    this.headphones.getBluetoothName().then(name => this.headphoneName = name);
-
-    //  Capture headphone buttons
-    this.headphones.configureButtonUp(() => {
+    // capture headphone buttons
+    this._headphones.configureButtonUp(() => {
       this.nextState();
     }); 
+  }
+
+  create() {
+    let scoreText = this.game.add.text(this.game.world.centerX, 65, 'Score: ' + this._rawScore, Styles.ScoreTextStyle);
+    scoreText.anchor.set(0.5);
+
+    this._instructionText = this.game.add.text(this.game.world.centerX, 425, 'Press UP to continue', Styles.InstructionTextStyle);
+    this._instructionText.anchor.set(0.5);
 
     // let username = prompt('Name:', this.headphoneName);
     let username = 'test';
     let leaderboard = new Leaderboard();
-    leaderboard.postScore(username, this.gameScore).then(result => {
-      console.log(result);
-      this.score = result;
+    leaderboard.postScore(username, this._rawScore).then(score => {
+      let rankText = this.game.add.text(this.game.world.centerX, 100, 'Overall Rank: ' + score.rank, Styles.RankTextStyle);
+      rankText.anchor.set(0.5);
     }).then(() => {
       return leaderboard.getLeaders();
     }).then(scores => {
+      // draw leaderboard
       console.log(scores);
-      this.leaderboard = scores;
     });
-  }
-
-  create() {
-    let scoreTextStyle = { font: '28px Consolas', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-    let scoreText = this.game.add.text(this.game.world.centerX, 65, 'Score: ' + this.gameScore, scoreTextStyle);
-    scoreText.anchor.set(0.5);
-
-    let instructionTextStyle = { font: '18px Consolas', fill: '#ffffff', align: 'left', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-    let instructionText = this.game.add.text(this.game.world.centerX, 425, 'Press UP to continue', instructionTextStyle);
-    instructionText.anchor.set(0.5);
   }
 
   update() {
@@ -231,19 +241,15 @@ export class GameOver extends Phaser.State {
       this.nextState();
     }
 
-    if (this.score && !this.rankText) {
-      let rankTextStyle = { font: '26px Consolas', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-      this.rankText = this.game.add.text(this.game.world.centerX, 100, 'Overall Rank: ' + this.score.rank, rankTextStyle);
-      this.rankText.anchor.set(0.5);
+    // blink text
+    this._timer += this.game.time.elapsed;
+    if (this._timer >= 500) {
+      this._timer -= 500;
+      this._instructionText.visible = !this._instructionText.visible;
     }
-
-/*
-    if (this.leaderboard) {
-      console.log(this.leaderboard);
-    }*/
   }
 
   private nextState() {
-    this.game.state.start(stateStarting, true, false, this.headphones);
+    this.game.state.start(stateStarting, true, false, this._headphones);
   }
 }
