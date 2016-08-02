@@ -13,6 +13,8 @@ export class Muzik {
       return new Promise(resolve => resolve(false));
     }
 
+    console.log('Attempting to connect...');
+    
     return new Promise(resolve => {
       this.isConnected().then(isConnected => { 
         if (!isConnected) {
@@ -52,7 +54,7 @@ export class Muzik {
       muzik.getBluetoothLocalName(name => {
         resolve(name);
       });
-    }) 
+    });
   }
 
   public configureAccelerometer(callback) {

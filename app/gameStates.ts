@@ -1,5 +1,7 @@
 import {Muzik} from './muzik';
 import {RingBuffer} from './util';
+import {Dialogs} from 'ionic-native';
+import {Leaderboard, Score} from './leaderboard';
 
 export var stateStarting = 'Starting';
 export var statePlaying = 'Playing';
@@ -178,26 +180,45 @@ export class Playing extends Phaser.State {
 }
 
 export class GameOver extends Phaser.State {
-  score: number;
+  gameScore: number;
   headphones: Muzik;
+  headphoneName: string;
+  score: Score;
+  leaderboard: Score[];
+  rankText: Phaser.Text;
 
-  init(score: number, headphones: Muzik) {
-    this.score = score;
+  init(gameScore: number, headphones: Muzik) {
+    this.gameScore = gameScore;
     this.headphones = headphones;
   }
 
   preload() {
     this.game.stage.backgroundColor = Styles.BackgroundColor;
 
+    this.headphones.getBluetoothName().then(name => this.headphoneName = name);
+
     //  Capture headphone buttons
     this.headphones.configureButtonUp(() => {
       this.nextState();
     }); 
+
+    // let username = prompt('Name:', this.headphoneName);
+    let username = 'test';
+    let leaderboard = new Leaderboard();
+    leaderboard.postScore(username, this.gameScore).then(result => {
+      console.log(result);
+      this.score = result;
+    }).then(() => {
+      return leaderboard.getLeaders();
+    }).then(scores => {
+      console.log(scores);
+      this.leaderboard = scores;
+    });
   }
 
   create() {
-    let scoreTextStyle = { font: '32px Arial', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
-    let scoreText = this.game.add.text(this.game.world.centerX, 125, 'Score: ' + this.score, scoreTextStyle);
+    let scoreTextStyle = { font: '28px Consolas', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
+    let scoreText = this.game.add.text(this.game.world.centerX, 65, 'Score: ' + this.gameScore, scoreTextStyle);
     scoreText.anchor.set(0.5);
 
     let instructionTextStyle = { font: '18px Consolas', fill: '#ffffff', align: 'left', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
@@ -209,6 +230,17 @@ export class GameOver extends Phaser.State {
     if (this.game.input.activePointer.justPressed()) {
       this.nextState();
     }
+
+    if (this.score && !this.rankText) {
+      let rankTextStyle = { font: '26px Consolas', fill: '#ffffff', align: 'center', wordWrap: true, wordWrapWidth: (this.game.world.width - 50)};
+      this.rankText = this.game.add.text(this.game.world.centerX, 100, 'Overall Rank: ' + this.score.rank, rankTextStyle);
+      this.rankText.anchor.set(0.5);
+    }
+
+/*
+    if (this.leaderboard) {
+      console.log(this.leaderboard);
+    }*/
   }
 
   private nextState() {
